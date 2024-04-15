@@ -10,25 +10,25 @@ import requests
 from streamlit_lottie import st_lottie
 
 from streamlit_lottie import st_lottie_spinner
-st.set_page_config(page_title="Pets Supplements", page_icon="🐾", layout="wide")
+st.set_page_config(page_title="Sales Report", page_icon="💲", layout="wide")
 
 
-def load_lottieurl(url: str):
-    r = requests.get(url)
-    if r.status_code != 200:
-        return None
-    return r.json()
-
-
-
-file_url = 'https://assets2.lottiefiles.com/packages/lf20_v7nRH3.json'
-lottie_dog = load_lottieurl(file_url)
-st_lottie(lottie_dog, speed=1, height=150, key="initial")
+#def load_lottieurl(url: str):
+#    r = requests.get(url)
+#    if r.status_code != 200:
+#        return None
+#    return r.json()
 
 
 
+#file_url = 'https://assets2.lottiefiles.com/packages/lf20_v7nRH3.json'
+#lottie_dog = load_lottieurl(file_url)
+#st_lottie(lottie_dog, speed=1, height=150, key="initial")
 
-st.markdown("<h1 style='text-align: center; color: red;'>Pets Report</h1>", unsafe_allow_html=True)
+
+
+
+st.markdown("<h1 style='text-align: center; color: red;'>Sales Report</h1>", unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: black;'>This interactive report is created as an example of explatory sales data analysis report for Amazon's Categories.</p>", unsafe_allow_html=True)
 
