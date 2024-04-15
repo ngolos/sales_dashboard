@@ -63,7 +63,7 @@ def get_data():
     return df
 
 
-st.title('Sales Report')
+st.title('Current Workflow')
 """
 This is supposed to be a multipage framework.
 - Page 1: Overall Sales view.
@@ -90,6 +90,14 @@ st.header('Page 1 - Explore the Largest Ingredient Groups for each Product Form'
 
 # TOP KPI's
 total_sales_all = df["Mo_Revenue_Mln"].sum().round(2)
+# Filter the data for deals that are in the 'Won' stage and in the last quarter of 2017
+won_deals_last_quarter = df[(df['deal_stage'] == 'Won') & 
+                              (df['close_date'].dt.year == 2017) & 
+                              (df['close_date'].dt.quarter == 4)]
+
+# Calculate the total sales for these filtered entries
+total_sales_last_quarter = won_deals_last_quarter['close_value'].sum()
+
 total_sales_dogs = df.query('Type=="Dogs"')["Mo_Revenue_Mln"].sum().round(2)
 total_sales_cats = df.query('Type=="Cats"')["Mo_Revenue_Mln"].sum().round(2)
 total_sales_catsdogs = df.query('Type=="Cats&Dogs"')["Mo_Revenue_Mln"].sum().round(2)
@@ -97,7 +105,7 @@ total_sales_catsdogs = df.query('Type=="Cats&Dogs"')["Mo_Revenue_Mln"].sum().rou
 #star_rating = ":star:" * int(round(average_rating, 0))
 #average_sale_by_transaction = round(df_selection["Total"].mean(), 2)
 st.write("---")
-st.header(f'Total Sales (30 days) Amz Best Sellers:$ {total_sales_all:,} Mln')
+st.header(f'Total Won Deals (last quarter):$ {total_sales_last_quarter:,} Mln')
 #with st.echo():
 col1, col2, col3 = st.columns(3)
 with col1:
