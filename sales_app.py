@@ -50,25 +50,25 @@ st.markdown(f""" <style>
         padding-bottom: {padding}rem;
     }} </style> """, unsafe_allow_html=True)
 
-url_csv = "https://raw.githubusercontent.com/ngolos/multi-page-app/main/july_pets4.csv"
+url_csv = "https://raw.githubusercontent.com/ngolos/sales_dashboard/main/merged_data.csv"
 
 @st.cache
 def get_data():
-    #df = pd.read_csv(url_csv, keep_default_na=False)
-    df=pd.read_csv(url_csv, parse_dates=['Date First Available'], keep_default_na=False)
-    df[["Price", "Mo. Revenue","D. Sales"]] = df[["Price", "Mo. Revenue","D. Sales"]].apply(pd.to_numeric)
+    df = pd.read_csv(url_csv, keep_default_na=False)
+    #df=pd.read_csv(url_csv, parse_dates=['Date First Available'], keep_default_na=False)
+    #df[["Price", "Mo. Revenue","D. Sales"]] = df[["Price", "Mo. Revenue","D. Sales"]].apply(pd.to_numeric)
     #df['Mo_Revenue_Mln']=(df['Mo. Revenue']/1000000).round(4)
     #df['Mo. Revenue'] = df['Mo. Revenue'].astype(str).astype(float, errors='ignore')
     #df['Sales_Mln'] = (df['Sales_Mln']).round(2)
     return df
 
 
-st.title('Pets Report')
+st.title('Sales Report')
 """
 This is supposed to be a multipage framework.
-- Page 1: Product form - Ingredient based view.
-- Page 2: function based view.
-- Page 3: could be google trends, etc. All the data is based on June'2020 Amazon BSL in Dietaty Supplements Category.
+- Page 1: Overall Sales view.
+- Page 2: Product Family view.
+- Page 3: Indstry View.
 - Currently I use a singe page mode.
 """
 df = get_data()
