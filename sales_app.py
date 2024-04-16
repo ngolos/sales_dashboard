@@ -7,174 +7,210 @@ import seaborn as sns
 import plotly.express as px
 import time
 import requests
-from streamlit_lottie import st_lottie
-
-from streamlit_lottie import st_lottie_spinner
+# Set the page configuration for the Streamlit app
 st.set_page_config(page_title="Sales Report", page_icon="💲", layout="wide")
 
-
-#def load_lottieurl(url: str):
-#    r = requests.get(url)
-#    if r.status_code != 200:
-#        return None
-#    return r.json()
-
-
-
-#file_url = 'https://assets2.lottiefiles.com/packages/lf20_v7nRH3.json'
-#lottie_dog = load_lottieurl(file_url)
-#st_lottie(lottie_dog, speed=1, height=150, key="initial")
-
-
-
-
+# Markdown for header and description
 st.markdown("<h1 style='text-align: center; color: red;'>Sales Report</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: black;'>This interactive report is created as an example of exploratory sales data analysis.</p>", unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: black;'>This interactive report is created as an example of explatory sales data analysis report for Amazon's Categories.</p>", unsafe_allow_html=True)
-
-
-
-
-
+# Hide the main menu and footer in Streamlit
 st.markdown(""" <style>
 #MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 </style> """, unsafe_allow_html=True)
 
-padding = 0
-st.markdown(f""" <style>
-    .reportview-container .main .block-container{{
-        padding-top: {padding}rem;
-        padding-right: {padding}rem;
-        padding-left: {padding}rem;
-        padding-bottom: {padding}rem;
-    }} </style> """, unsafe_allow_html=True)
-
-url_csv = "https://raw.githubusercontent.com/ngolos/sales_dashboard/main/merged_data.csv"
-
-@st.cache
-def get_data():
-    df = pd.read_csv(url_csv, keep_default_na=False)
-    #df=pd.read_csv(url_csv, parse_dates=['Date First Available'], keep_default_na=False)
-    #df[["Price", "Mo. Revenue","D. Sales"]] = df[["Price", "Mo. Revenue","D. Sales"]].apply(pd.to_numeric)
-    #df['Mo_Revenue_Mln']=(df['Mo. Revenue']/1000000).round(4)
-    #df['Mo. Revenue'] = df['Mo. Revenue'].astype(str).astype(float, errors='ignore')
-    #df['Sales_Mln'] = (df['Sales_Mln']).round(2)
+# Define a function to fetch and process the data
+@st.cache_data  # 👈 Add the caching decorator
+def load_data(url):
+    df = pd.read_csv(url, keep_default_na=False)
+    # Ensure the close_value column is numeric
+    df['close_value'] = df['close_value'].apply(pd.to_numeric)  # Coerce errors will convert non-convertible values to NaN
     return df
 
 
-st.title('Current Workflow')
-"""
-This is supposed to be a multipage framework.
-- Page 1: Overall Sales view.
-- Page 2: Product Family view.
-- Page 3: Indstry View.
-- Currently I use a singe page mode.
-"""
-df = get_data()
+
+# URL of the CSV file
+url = "https://raw.githubusercontent.com/ngolos/sales_dashboard/main/merged_data.csv"
+df = load_data(url)
+
+# Filters for product family, manager, and sector
+office = df['regional_office'].drop_duplicates()
+office_choice = st.multiselect('Select your office from 3 options:', options=sorted(office), default='West')
 
 
-# Filters
-#st.sidebar.header('User Input Features')
-#product_choice = []
+#product_family = st.selectbox('Select Product Family', df['product'].unique())
+#manager = st.selectbox('Select Manager', df['sales_agent'].unique())
+#sector = st.selectbox('Select Sector', df['sector'].unique())
 
-#product_type = df['Sup_Type'].drop_duplicates()
-#product_choice = st.sidebar.multiselect('Select product form:', options=sorted(product_type), default='Capsules')
 
-#category list
-#function_type=['Beauty', 'Body', 'Brain', 'Digest', 'Energy', 'Fitness', 'Immune', 'Joints', 'Multi', 'Stress_Sleep','Weight_Mngm' ]
-#function_choice = st.sidebar.selectbox('Select functionality:', function_type)
 
-st.header('Page 1 - Explore the Largest Ingredient Groups for each Product Form')
-#st.dataframe(df)
+# Calculate and display sales for the last quarter
+df['close_date'] = pd.to_datetime(df['close_date'])
+latest_date = df['close_date'].max()
+latest_year = latest_date.year
+latest_quarter = latest_date.quarter
 
-# TOP KPI's
-total_sales_all = df["Mo_Revenue_Mln"].sum().round(2)
-# Filter the data for deals that are in the 'Won' stage and in the last quarter of 2017
+# Filter for "Won" deals in the latest quarter
 won_deals_last_quarter = df[(df['deal_stage'] == 'Won') & 
-                              (df['close_date'].dt.year == 2017) & 
-                              (df['close_date'].dt.quarter == 4)]
+                            (df['close_date'].dt.year == latest_year) & 
+                            (df['close_date'].dt.quarter == latest_quarter)]
 
-# Calculate the total sales for these filtered entries
+# Calculate total sales
 total_sales_last_quarter = won_deals_last_quarter['close_value'].sum()
 
-total_sales_dogs = df.query('Type=="Dogs"')["Mo_Revenue_Mln"].sum().round(2)
-total_sales_cats = df.query('Type=="Cats"')["Mo_Revenue_Mln"].sum().round(2)
-total_sales_catsdogs = df.query('Type=="Cats&Dogs"')["Mo_Revenue_Mln"].sum().round(2)
-#average_rating = round(df_selection["Rating"].mean(), 1)
-#star_rating = ":star:" * int(round(average_rating, 0))
-#average_sale_by_transaction = round(df_selection["Total"].mean(), 2)
-st.write("---")
-st.header(f'Total Won Deals (last quarter):$ {total_sales_last_quarter:,} Mln')
-#with st.echo():
+# Display sales information, ensuring the sum is a float
+if pd.notna(total_sales_last_quarter):
+    st.subheader(f'Total Sales for Last Quarter (Q{latest_quarter} {latest_year})')
+    st.write(f"Total sales: ${total_sales_last_quarter:,.2f}")
+else:
+    st.write("No sales data available for the last quarter.")
+
+# Calculate total sales per quarter
+df['quarter_year'] = df['close_date'].dt.to_period('Q')
+
+# Group data to sum values for won and lost deals
+quarterly_data = df.groupby(['quarter_year', 'deal_stage', 'regional_office', 'manager', 'series', 'product', 'sector']).agg({'close_value': 'sum', 'sales_price': 'sum'}).reset_index()
+
+# Filter to show 'Won' and 'Lost' deals for the sales chart
+quarterly_sales_won = quarterly_data[quarterly_data['deal_stage'] == 'Won']
+quarterly_sales_lost = quarterly_data[quarterly_data['deal_stage'] == 'Lost']
+
+# Count opportunities per quarter for the count chart
+quarterly_opportunities = df.groupby(['quarter_year', 'deal_stage']).size().reset_index(name='count')
+
+# Calculate sums and counts for each group
+grouped = df.groupby(['quarter_year', 'deal_stage']).agg({
+    'close_value': 'sum', 
+    'sales_price': 'sum',
+    'deal_stage': 'size'
+}).rename(columns={'deal_stage': 'count'}).reset_index()
+
+# Calculating the average values depending on deal stage
+grouped['average_value'] = grouped.apply(
+    lambda x: x['close_value'] / x['count'] if x['deal_stage'] == 'Won' else x['sales_price'] / x['count'], axis=1
+)
+
+# Filter for chart
+average_values_chart_data = grouped[['quarter_year', 'deal_stage', 'average_value']]
+
+
+# Assuming df is already loaded and 'close_date' and 'engage_date' are datetime types
+df['engage_date'] = pd.to_datetime(df['engage_date'], errors='coerce')
+df['close_date'] = pd.to_datetime(df['close_date'], errors='coerce')
+
+# Add quarter-year for engage date
+df['engage_quarter'] = df['engage_date'].dt.to_period('Q')
+
+# Get the latest date from data or use current date to find the last quarter
+last_date = df['close_date'].max()
+last_quarter = last_date.to_period('Q') if pd.notnull(last_date) else pd.Timestamp('now').to_period('Q')
+
+# Expand 'Engaging' deals across quarters
+engaging_df = df[df['deal_stage'] == 'Engaging']
+expanded_rows = []
+
+for index, row in engaging_df.iterrows():
+    start_q = row['engage_quarter']
+    end_q = last_quarter
+    period = pd.period_range(start=start_q, end=end_q, freq='Q')
+    for quarter in period:
+        deal_stage = 'Ongoing' if quarter > start_q else 'Engaging'  # Conditionally set 'Engaging' or 'Ongoing'
+        expanded_rows.append({
+            'opportunity_id': row['opportunity_id'], 
+            'sales_agent': row['sales_agent'], 
+            'product': row['product'],
+            'account': row['account'],
+            'quarter_year': str(quarter),  # Convert the Period object to a string
+            'deal_stage': deal_stage,
+            'sales_price': row['sales_price'],
+            'close_value': 0,
+            'engage_date': row['engage_date'], 
+            'year': row['year'], 
+            'quarter':row['quarter'],
+            'manager': row['manager'], 
+            'regional_office':row['regional_office'], 
+            'sector':row['sector'], 
+            'series':row['series'],
+       'engage_quarter':row['engage_quarter'],
+        })
+        
+# Convert expanded rows into a DataFrame
+expanded_df = pd.DataFrame(expanded_rows)
+
+# Combine with existing data
+# Combine with original data for each chart and compute necessary aggregations
+combined_data = pd.concat([df, expanded_df])
+
+# Convert expanded rows into a DataFrame
+expanded_df = pd.DataFrame(expanded_rows)
+
+# Combine with existing data
+# Combine with original data for each chart and compute necessary aggregations
+combined_data = pd.concat([df, expanded_df])
+# Grouping and aggregation for charts
+final_data = combined_data.groupby(['quarter_year', 'deal_stage']).agg({
+    'close_value': 'sum', 
+    'sales_price': 'sum',
+    'deal_stage': 'size'
+}).rename(columns={'deal_stage': 'count'}).reset_index()
+
+# Calculate average values
+final_data['average_value'] = final_data['sales_price'] / final_data['count']
+final_data['quarter_year'] = final_data['quarter_year'].astype(str)
+# Visualizations
 col1, col2, col3 = st.columns(3)
+
+# Define the domain and color range for deal_stage categories
+color_scale = alt.Scale(domain=['Won', 'Lost', 'Engaging', 'Ongoing'],  # Update the list with actual stages
+                        range=['steelblue', 'lightseagreen', '#7D3C98','silver'])  # Assign colors to each stage
+
+# Chart 1: Total Sales Value by Quarter
 with col1:
-    #col1.metric(label="Dogs", value="%.2f" % total_sales_dogs)
-    col1.metric(label="🐶Dogs", value=(f"$ {total_sales_dogs:,} Mln"))
+    st.subheader('Total Sales Value by Quarter')
+    won_chart = alt.Chart(final_data.query("deal_stage=='Won'")).mark_line(point=True).encode(
+        x=alt.X('quarter_year:N', title=''),
+        y=alt.Y('close_value:Q', title=''),
+        color=alt.Color('deal_stage:N', scale=color_scale),
+        tooltip=[alt.Tooltip('quarter_year:N', title='Quarter'), alt.Tooltip('close_value:Q', title='Total Sales')]
+    )
+    lost_chart = alt.Chart(final_data.query("deal_stage!='Won'")).mark_line().encode(
+        x='quarter_year:N',
+        y=alt.Y('sales_price:Q',title=""),
+        color=alt.Color('deal_stage:N', scale=color_scale),
+        tooltip=['quarter_year', 'sales_price', 'deal_stage']
+    )
+    combined_chart = alt.layer(won_chart, lost_chart).resolve_scale(y='shared')
+    st.altair_chart(combined_chart, use_container_width=True)
+
+# Chart 2: Number of Opportunities by Quarter
+stack_order = {
+    'Won': 1,      # Lower number -> lower in the stack
+    'Lost': 2,
+    'Engaging': 3,
+    'Ongoing': 4
+}
+# Assign a new column for sorting based on your defined order
+final_data['sort_order'] = final_data['deal_stage'].map(stack_order)
+
 with col2:
-    col2.metric(label="🐶🐱Cats&Dogs", value=(f"$ {total_sales_catsdogs:,} Mln"))
+    st.subheader('Number of Opportunities by Quarter')
+    opportunities_chart = alt.Chart(final_data).mark_bar().encode(
+        x=alt.X('quarter_year:N', title=""),
+         y=alt.Y('count:Q', stack='zero', title=""),  # Ensure stacking starts from zero
+    color=alt.Color('deal_stage:N', scale=color_scale),  # Use your color scale
+    order=alt.Order('sort_order:O', sort='ascending'),  # Control the stacking order with the order encoding
+    tooltip=['quarter_year', 'count', 'deal_stage']
+    )
+    st.altair_chart(opportunities_chart, use_container_width=True)
+
+# Chart 3: Average Opportunity Value by Quarter
 with col3:
-    col3.metric(label="🐱Cats", value=(f"$ {total_sales_cats:,} Mln"))
-st.write("---")
-
-a=df.groupby(['Sub-Category'])[['Mo_Revenue_Mln']].sum().sort_values('Mo_Revenue_Mln', ascending=False).reset_index()
-sub_category_list = a['Sub-Category'].tolist()
-
-
-
-st.header('Explore Sales by Target, Brand and Product')
-target_type = df['Type'].drop_duplicates()
-target_choice = st.multiselect('Select your target from 3 options:', options=sorted(target_type), default='Dogs')
-
-#Filter df based on selection
-filterd_type_df = df[df['Type'].isin(target_choice)]
-#filterd_type_df
-by_group=filterd_type_df.groupby(['Type', 'Sub-Category'])[['Mo_Revenue_Mln']].sum().sort_values(['Type','Mo_Revenue_Mln'], ascending=[False,False]).round(2).reset_index()
-cat2=filterd_type_df.groupby(['Type', 'Brand']).agg(Sales_Mln=('Mo_Revenue_Mln', 'sum')).sort_values(by="Sales_Mln", ascending=False).head(15).reset_index()
-cat3=filterd_type_df.groupby(['Type', "Brand", 'Product Name']).agg(Sales_Mln=('Mo_Revenue_Mln', 'sum')).sort_values(by="Sales_Mln", ascending=False).head(50).reset_index()
-#by_group
-#set colors
-#=Endurance & Energy=Powders=Sports Nutrition
-
-
-chart=alt.Chart(by_group).mark_bar().encode(
-    x=alt.X('Mo_Revenue_Mln:Q'),
-    y=alt.Y("Sub-Category:N", sort=['Fish Oil Supplements','Probiotics','Multivitamins','Herbal Supplements','Antioxidants','Misc','Amino Acids']),
-    #column='Sub-Category',
-    color=alt.Color('Type:N', legend=alt.Legend(orient="top"), scale=alt.Scale(
-            domain=['Cats', 'Cats&Dogs', "Dogs"],
-            range=["lightsalmon", 'silver', "lightseagreen"])),
-    tooltip=('Type','Mo_Revenue_Mln'),
-    #facet=alt.Facet('Sub-Category:N', columns=4, sort=sub_category_list),
-).properties(height=300)
-
-chart2=alt.Chart(cat2).mark_bar().encode(
-    x=alt.X('Sales_Mln:Q'),
-    y=alt.Y("Brand:N",sort='-x'),
-    #column='Sub-Category',
-    color=alt.Color('Type:N', legend=alt.Legend(orient="top"), scale=alt.Scale(
-            domain=['Cats', 'Cats&Dogs', "Dogs"],
-            range=["lightsalmon", 'silver', "lightseagreen"])),
-    tooltip=('Type','Sales_Mln'),
-    #facet=alt.Facet('Sub-Category:N', columns=4, sort=sub_category_list),
-).properties(height=300)
-
-
-
-col1, col2, col3 = st.columns((1,1,2))
-with col1:
-    #col1.metric(label="Dogs", value="%.2f" % total_sales_dogs)
-    st.subheader("Sales Split by Functionality:")
-    st.altair_chart(chart)
-with col2:
-    st.subheader("Top Brands:")
-    st.altair_chart(chart2)
-with col3:
-    st.subheader("Top Products:")
-    st.dataframe(cat3.head(10))
-
-fig = px.treemap(filterd_type_df, path=[px.Constant("all"), 'Sub-Category', 'Brand','Product Name'], values='Mo_Revenue_Mln', color='Sub-Category')
-fig.update_traces(root_color="lightgrey")
-fig.data[0].textinfo = 'value'
-fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
-st.plotly_chart(fig)
+    st.subheader('Average Opportunity Value by Quarter')
+    average_chart = alt.Chart(final_data).mark_line().encode(
+        x=alt.X('quarter_year:N', title=""),
+        y=alt.Y('average_value:Q',title=""),
+        color=alt.Color('deal_stage:N', scale=color_scale),
+        tooltip=['quarter_year', 'average_value', 'deal_stage']
+    )
+    st.altair_chart(average_chart, use_container_width=True)
