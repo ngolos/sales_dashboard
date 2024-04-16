@@ -169,13 +169,13 @@ color_scale = alt.Scale(domain=['Won', 'Lost', 'Engaging', 'Ongoing'],  # Update
 with col1:
     st.subheader('Total Sales Value by Quarter')
     won_chart = alt.Chart(final_data.query("deal_stage=='Won'")).mark_line(point=True).encode(
-        x=alt.X('quarter_year:N', title=''),
+        x=alt.X('quarter_year:N', title='', axis=alt.Axis(labelAngle=0)),
         y=alt.Y('close_value:Q', title=''),
         color=alt.Color('deal_stage:N', scale=color_scale),
         tooltip=[alt.Tooltip('quarter_year:N', title='Quarter'), alt.Tooltip('close_value:Q', title='Total Sales')]
     )
-    lost_chart = alt.Chart(final_data.query("deal_stage!='Won'")).mark_line().encode(
-        x='quarter_year:N',
+    lost_chart = alt.Chart(final_data.query("deal_stage!='Won'")).mark_line(point=True).encode(
+        x=alt.X('quarter_year:N', axis=alt.Axis(labelAngle=0)),
         y=alt.Y('sales_price:Q',title=""),
         color=alt.Color('deal_stage:N', scale=color_scale),
         tooltip=['quarter_year', 'sales_price', 'deal_stage']
@@ -196,7 +196,7 @@ final_data['sort_order'] = final_data['deal_stage'].map(stack_order)
 with col2:
     st.subheader('Number of Opportunities by Quarter')
     opportunities_chart = alt.Chart(final_data).mark_bar().encode(
-        x=alt.X('quarter_year:N', title=""),
+        x=alt.X('quarter_year:N', title="", axis=alt.Axis(labelAngle=0)),
          y=alt.Y('count:Q', stack='zero', title=""),  # Ensure stacking starts from zero
     color=alt.Color('deal_stage:N', scale=color_scale),  # Use your color scale
     order=alt.Order('sort_order:O', sort='ascending'),  # Control the stacking order with the order encoding
@@ -207,8 +207,8 @@ with col2:
 # Chart 3: Average Opportunity Value by Quarter
 with col3:
     st.subheader('Average Opportunity Value by Quarter')
-    average_chart = alt.Chart(final_data).mark_line().encode(
-        x=alt.X('quarter_year:N', title=""),
+    average_chart = alt.Chart(final_data).mark_line(point=True).encode(
+        x=alt.X('quarter_year:N', title="", axis=alt.Axis(labelAngle=0)),
         y=alt.Y('average_value:Q',title=""),
         color=alt.Color('deal_stage:N', scale=color_scale),
         tooltip=['quarter_year', 'average_value', 'deal_stage']
