@@ -100,7 +100,7 @@ grouped['average_value'] = grouped.apply(
 # Round the last two columns to 2 decimal places
 grouped['average_days_to_close'] = grouped['average_days_to_close'].round(1)
 grouped['average_value'] = grouped['average_value'].round(2)
-st.dataframe(grouped)
+
 
 # Filter for chart
 average_values_chart_data = grouped[['quarter_year', 'deal_stage', 'average_value']]
