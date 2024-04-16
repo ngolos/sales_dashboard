@@ -26,6 +26,12 @@ def load_data(url):
     df = pd.read_csv(url, keep_default_na=False)
     # Ensure the close_value column is numeric
     df['close_value'] = df['close_value'].apply(pd.to_numeric)  # Coerce errors will convert non-convertible values to NaN
+    df['days_to_close'] = df['days_to_close'].apply(pd.to_numeric)
+    # Assuming df is already loaded and 'close_date' and 'engage_date' are datetime types
+    df['engage_date'] = pd.to_datetime(df['engage_date'], errors='coerce')
+    df['close_date'] = pd.to_datetime(df['close_date'], errors='coerce')
+    # Add quarter-year for engage date
+    df['engage_quarter'] = df['engage_date'].dt.to_period('Q')
     return df
 
 
@@ -46,7 +52,6 @@ office_choice = st.multiselect('Select your office from 3 options:', options=sor
 
 
 # Calculate and display sales for the last quarter
-df['close_date'] = pd.to_datetime(df['close_date'])
 latest_date = df['close_date'].max()
 latest_year = latest_date.year
 latest_quarter = latest_date.quarter
@@ -83,24 +88,25 @@ quarterly_opportunities = df.groupby(['quarter_year', 'deal_stage']).size().rese
 grouped = df.groupby(['quarter_year', 'deal_stage']).agg({
     'close_value': 'sum', 
     'sales_price': 'sum',
-    'deal_stage': 'size'
-}).rename(columns={'deal_stage': 'count'}).reset_index()
+    'deal_stage': 'size',
+    'days_to_close': 'mean'
+}).rename(columns={'deal_stage': 'count', 'days_to_close': 'average_days_to_close'}).reset_index()
 
 # Calculating the average values depending on deal stage
 grouped['average_value'] = grouped.apply(
     lambda x: x['close_value'] / x['count'] if x['deal_stage'] == 'Won' else x['sales_price'] / x['count'], axis=1
 )
 
+# Round the last two columns to 2 decimal places
+grouped['average_days_to_close'] = grouped['average_days_to_close'].round(1)
+grouped['average_value'] = grouped['average_value'].round(2)
+st.dataframe(grouped)
+
 # Filter for chart
 average_values_chart_data = grouped[['quarter_year', 'deal_stage', 'average_value']]
 
 
-# Assuming df is already loaded and 'close_date' and 'engage_date' are datetime types
-df['engage_date'] = pd.to_datetime(df['engage_date'], errors='coerce')
-df['close_date'] = pd.to_datetime(df['close_date'], errors='coerce')
 
-# Add quarter-year for engage date
-df['engage_quarter'] = df['engage_date'].dt.to_period('Q')
 
 # Get the latest date from data or use current date to find the last quarter
 last_date = df['close_date'].max()
@@ -214,3 +220,12 @@ with col3:
         tooltip=['quarter_year', 'average_value', 'deal_stage']
     )
     st.altair_chart(average_chart, use_container_width=True)
+#with col4:
+#    st.subheader('Average Days to Close by Quarter')
+#    days_chart = alt.Chart(grouped).mark_line(point=True).encode(
+#        x=alt.X('quarter_year:N', title="", axis=alt.Axis(labelAngle=0)),
+#        y=alt.Y('average_days_to_close:Q',title=""),
+#        color=alt.Color('deal_stage:N', scale=color_scale),
+#        tooltip=['quarter_year', 'average_value', 'deal_stage']
+#    )
+#    st.altair_chart(days_chart, use_container_width=True)
