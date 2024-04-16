@@ -1,4 +1,4 @@
-opportunity_id,sales_agent,product,account,deal_stage,engage_date,close_date,close_value,year,quarter,manager,regional_office,sector,year_established,revenue,employees,office_location,subsidiary_of,series,sales_price,profit_margin,close_value_k,sales_cycle,quarter_year
+opportunity_id,sales_agent,product,account,deal_stage,engage_date,close_date,close_value,year,quarter,manager,regional_office,sector,year_established,revenue,employees,office_location,subsidiary_of,series,sales_price,profit_margin,close_value_k,days_to_close,quarter_year
 1C1I7A6R,Moses Frase,GTXPlusBasic,Cancity,Won,2016-10-20,2017-03-01,1054.0,2017.0,2017Q1,Dustin Brinkmann,Central,retail,2001.0,718.62,2448.0,United States,,GTX,1096,-0.038321167883211715,1.054,132.0,2017Q1
 Z063OYW0,Darcel Schlecht,GTXPro,Isdom,Won,2016-10-25,2017-03-11,4514.0,2017.0,2017Q1,Melvin Marxen,Central,medical,2002.0,3178.24,4540.0,United States,,GTX,4821,-0.06367973449491804,4.514,137.0,2017Q1
 EC4QE1BX,Darcel Schlecht,MGSpecial,Cancity,Won,2016-10-25,2017-03-07,50.0,2017.0,2017Q1,Melvin Marxen,Central,retail,2001.0,718.62,2448.0,United States,,MG,55,-0.09090909090909094,0.05,133.0,2017Q1
