@@ -492,6 +492,7 @@ final_comparison_chart = alt.hconcat(gtx_chart, mg_chart, gtk_chart).resolve_sca
 )
 
 
+st.write("---")
 st.altair_chart(final_comparison_chart)
 
 # Assuming 'Won' deals are relevant for this plot
