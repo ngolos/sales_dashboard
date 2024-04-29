@@ -492,8 +492,6 @@ final_comparison_chart = alt.hconcat(gtx_chart, mg_chart, gtk_chart).resolve_sca
 )
 
 
-st.write("---")
-st.altair_chart(final_comparison_chart)
 
 # Assuming 'Won' deals are relevant for this plot
 won_data = data[data['deal_stage'] == 'Won']
@@ -601,3 +599,7 @@ if office_choice != "ALL":
     st.altair_chart(chart)
 else:
     st.altair_chart(scatter_plot)
+
+
+st.write("---")
+st.altair_chart(final_comparison_chart)
