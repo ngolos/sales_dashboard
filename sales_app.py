@@ -514,6 +514,7 @@ legend_selection = alt.selection_multi(fields=['Client_Region'], bind='legend')
 # Define interaction for zoom and pan
 zoom = alt.selection_interval(bind='scales', encodings=['x'])
 
+st.write("---")
 # Create a scatterplot using mark_circle
 
 won_data = data[data['deal_stage'] == 'Won']
