@@ -542,7 +542,7 @@ scatter_plot = alt.Chart(aggregated_data).mark_circle(size=60).encode(
     opacity=alt.condition(legend_selection, alt.value(1), alt.value(0.05)),
     tooltip=[alt.Tooltip('account:N', title='Account'), alt.Tooltip('sector:N', title='Sector'),alt.Tooltip('total_close_value:Q', title='Close Value')]
 ).properties(
-    title='Interactive Scatterplot with Zoom and Tooltips',
+    title='Client Split by regional offices',
     width=800,
     height=400
 ).add_selection(
