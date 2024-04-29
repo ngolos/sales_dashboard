@@ -424,11 +424,11 @@ with col6:
     
     st.altair_chart(col3_chart, use_container_width=True)
 
-st.write('ALL - add - nature of engaging deals - group 1 column - office and core clientele, 2 column other offices. 3 without clients')
-st.write('ALL - split by deals - ')
-st.write('ALL - split by size to show potential grouping')
+#st.write('ALL - add - nature of engaging deals - group 1 column - office and core clientele, 2 column other offices. 3 without clients')
+#st.write('ALL - split by deals - ')
+#st.write('ALL - split by size to show potential grouping')
 
-st.write('Regions - 1. split inside teams and 2. activity 3. by client')
+#st.write('Regions - 1. split inside teams and 2. activity 3. by client')
 #with col4:
 #    st.subheader('Average Days to Close by Quarter')
 #    days_chart = alt.Chart(grouped).mark_line(point=True).encode(
